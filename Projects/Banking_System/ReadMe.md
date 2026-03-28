@@ -1,86 +1,78 @@
 # 🏦 Banking System (Java OOP Project)
 
-## 📌 Overview
-
-This is a console-based Banking System implemented in Java using Object-Oriented Programming (OOP) principles.
-The system simulates real-world banking operations such as account creation, deposits, withdrawals, transfers, and transaction tracking.
+A **console-based Banking System** built using **core Java and Object-Oriented Programming (OOP)** principles.
+This project simulates real-world banking operations such as account creation, deposits, withdrawals, transfers, and transaction tracking.
 
 ---
 
 ## 🚀 Features
 
-* ✅ Create new bank accounts (auto-generated account IDs)
-* 💰 Deposit money
-* 💸 Withdraw money with balance validation
+* ✅ Create **Savings Account** and **Current Account**
+* 💰 Deposit & Withdraw money
 * 🔁 Transfer money between accounts
 * 📊 Check account balance
-* 🧾 View transaction history
-* 🏦 Static bank-level tracking (total accounts)
+* 🧾 View transaction history with timestamps
+* 📈 Calculate interest (Savings Account only)
+* 🏦 Overdraft facility for Current Account
+* 🔐 Data encapsulation and validation
 
 ---
 
-## 🧠 Concepts Used
+## 🧠 OOP Concepts Implemented
 
-This project demonstrates strong understanding of:
+### 🔹 Abstraction
 
-* Object-Oriented Programming (OOP)
+* `Account` is an **abstract class**
+* Defines common behavior for all account types
 
-  * Classes & Objects
-  * Encapsulation
-  * Constructors
-  * Method design
-* Static variables & methods
-* Pass-by-value & reference handling
-* Collections Framework
+### 🔹 Inheritance
 
-  * `HashMap` for efficient account lookup (O(1))
-  * `ArrayList` for transaction history
-* Real-world system design thinking
-* Control flow & validation handling
+* `SavingsAccount` and `CurrentAccount` extend `Account`
 
----
+### 🔹 Polymorphism
 
-## 🏗️ System Design
+* Method overriding:
 
-### 🔹 Account Class
+  * `calculateInterest()`
+  * `withdraw()`
+* Parent reference (`Account`) used for child objects
 
-Represents an individual user account.
+### 🔹 Encapsulation
 
-* Stores user details and balance
-* Handles deposit & withdrawal
-* Maintains transaction history
+* Private data members (`balance`, `customerId`, etc.)
+* Controlled access using getters and methods
 
-### 🔹 Transaction Class
+### 🔹 Method Overriding
 
-Represents each financial operation.
+* Different behavior for:
 
-* Stores transaction ID, type, amount, timestamp
-
-### 🔹 Bank Class
-
-Central controller of the system.
-
-* Manages all accounts using `HashMap`
-* Handles deposit, withdrawal, and transfer operations
-* Generates unique account IDs
+  * Interest calculation
+  * Withdrawal logic
 
 ---
 
-## 🔄 Sample Flow
+## 🏗️ Project Structure
 
-1. Create Account
-2. Deposit / Withdraw
-3. Transfer Money
-4. View Balance
-5. Check Transaction History
+```
+Banking_System
+│
+├── Account (abstract)
+│   ├── SavingsAccount
+│   └── CurrentAccount
+│
+├── Transaction
+├── Bank
+└── Main (Menu-driven system)
+```
 
 ---
 
-## 🛠️ Technologies Used
+## ⚙️ Technologies Used
 
 * Java (Core Java)
-* Java Collections Framework
-* Java Time API (`LocalDateTime`)
+* OOP Principles
+* Collections Framework (`HashMap`, `ArrayList`)
+* Date & Time API (`LocalDateTime`)
 
 ---
 
@@ -89,16 +81,22 @@ Central controller of the system.
 1. Clone the repository:
 
    ```bash
-   git clone <your-repo-link>
+   git clone https://github.com/your-username/banking-system-java.git
    ```
 
-2. Compile the code:
+2. Navigate to the project folder:
+
+   ```bash
+   cd banking-system-java
+   ```
+
+3. Compile the program:
 
    ```bash
    javac Banking_System.java
    ```
 
-3. Run the program:
+4. Run the program:
 
    ```bash
    java Banking_System
@@ -106,30 +104,45 @@ Central controller of the system.
 
 ---
 
-## 📈 Future Improvements
+## 📋 Menu Options
 
-* 🔐 Add authentication (PIN/password)
-* 📂 File handling for persistent storage
-* 🌐 Convert to GUI or Web Application
-* 🔄 Use Enum for transaction types
-* 🏗️ Layered architecture (Service layer)
+```
+1. Create Account
+2. Deposit
+3. Withdraw
+4. Transfer
+5. Check Balance
+6. Show Transactions
+7. Calculate Interest
+8. Exit
+```
+
+---
+
+## 💡 Key Highlights
+
+* Uses **HashMap for efficient account lookup (O(1))**
+* Implements **real-world banking logic**
+* Clean and scalable design using OOP
+* Demonstrates strong understanding of **Java fundamentals**
+
+---
+
+## 📌 Future Improvements
+
+* 🔹 Add Enum for transaction types
+* 🔹 File handling / database integration
+* 🔹 User authentication (PIN / password)
+* 🔹 GUI or Web-based interface (Spring Boot)
 
 ---
 
 ## 👨‍💻 Author
 
-* Vineet Chauhan
+**Vineet Chauhan**
 
 ---
 
-## ⭐ Why This Project?
+## ⭐ If you like this project
 
-This project reflects:
-
-* Strong OOP fundamentals
-* Ability to design real-world systems
-* Clean code structure and modular thinking
-
----
-
-⭐ If you like this project, consider giving it a star!
+Give it a ⭐ on GitHub and feel free to contribute!
