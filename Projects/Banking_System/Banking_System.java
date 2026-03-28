@@ -1,16 +1,17 @@
 import java.util.*;
 import java.time.LocalDateTime;
 
-class Account{
+// ABSTRACT CLASS
+abstract class Account {
     static String bankName = "SBI";
-    
-    private int customerId = 0;
+
+    private int customerId;
     private String name;
-    private int age = 0;
+    private int age;
     private String branchName;
-    private double balance = 0;
-    ArrayList<Transaction> transactions;
-    
+    private double balance;
+    private ArrayList<Transaction> transactions;
+
     Account(int customerId, String name, int age, String branchName, double balance) {
         this.customerId = customerId;
         this.name = name;
@@ -19,69 +20,101 @@ class Account{
         this.balance = Math.max(balance, 0);
         this.transactions = new ArrayList<>();
     }
-    
-    void deposit(double amount){
-        if(amount > 0){
+
+    void deposit(double amount) {
+        if (amount > 0) {
             balance += amount;
-            Transaction t = new Transaction(amount, "DEPOSIT");
-            transactions.add(t);
+            transactions.add(new Transaction(amount, "DEPOSIT"));
             System.out.println("Deposited: " + amount);
-        }
-        else{
-            System.out.println("Enter the valid amount");
-            return;
+        } else {
+            System.out.println("Invalid amount!");
         }
     }
-    
+
     void withdraw(double amount) {
-        if(amount <= balance) {
+        if (amount <= balance) {
             balance -= amount;
-            Transaction t = new Transaction(amount, "WITHDRAW");
-            transactions.add(t);
-
-        System.out.println("Withdrawn: " + amount);
-        }
-        else{
+            transactions.add(new Transaction(amount, "WITHDRAW"));
+            System.out.println("Withdrawn: " + amount);
+        } else {
             System.out.println("Insufficient Balance");
-            return;
         }
     }
 
-    int getCustomerId(){
+    // Protected helper for child classes
+    protected void updateBalance(double newBalance) {
+        this.balance = newBalance;
+    }
+
+    int getCustomerId() {
         return customerId;
     }
-    
+
     String getName() {
         return name;
-    }
-
-    int getAge(){
-        return age;
     }
 
     double getBalance() {
         return balance;
     }
 
-    String getBranchName(){
-        return branchName;
+    void display() {
+        System.out.println(customerId + " " + name + " " + age + " " + balance + " " + branchName + " " + bankName);
     }
-    
-    void display(){
-        System.out.println(customerId + " " + name + " " + age + " " + balance + " " +  branchName + " " + bankName);
-    }
-    
+
     void printTransactions() {
         System.out.println("\nTransaction History:");
         for (Transaction t : transactions) {
             t.printTransaction();
         }
     }
+
+    abstract double calculateInterest();
 }
 
+// SAVINGS ACCOUNT
+class SavingsAccount extends Account {
+
+    SavingsAccount(int id, String name, int age, String branch, double balance) {
+        super(id, name, age, branch, balance);
+    }
+
+    @Override
+    double calculateInterest() {
+        return getBalance() * 0.04;
+    }
+}
+
+// CURRENT ACCOUNT (WITH OVERDRAFT)
+class CurrentAccount extends Account {
+
+    private double overdraftLimit;
+
+    CurrentAccount(int id, String name, int age, String branch, double balance, double overdraftLimit) {
+        super(id, name, age, branch, balance);
+        this.overdraftLimit = overdraftLimit;
+    }
+
+    @Override
+    double calculateInterest() {
+        return 0;
+    }
+
+    @Override
+    void withdraw(double amount) {
+        if (amount <= getBalance() + overdraftLimit) {
+            updateBalance(getBalance() - amount);
+            System.out.println("Withdrawn: " + amount);
+        } else {
+            System.out.println("Overdraft limit exceeded!");
+        }
+    }
+}
+
+// TRANSACTION CLASS
 class Transaction {
     static int counter = 1;
-    
+
     int transactionId;
     double amount;
     String type;
@@ -91,7 +124,7 @@ class Transaction {
         this.transactionId = counter++;
         this.amount = amount;
         this.type = type;
-        this.dateTime = LocalDateTime.now(); 
+        this.dateTime = LocalDateTime.now();
     }
 
     void printTransaction() {
@@ -99,70 +132,107 @@ class Transaction {
     }
 }
 
+// BANK CLASS
 class Bank {
     static int totalAccounts = 0;
     static int idCounter = 1;
 
     HashMap<Integer, Account> accounts = new HashMap<>();
 
-    void createAccount(String name, int age, String branch, double balance) {
-        int id = idCounter;
-        idCounter++;
-        Account acc = new Account(id, name, age, branch, balance);
+    void createAccount(int type, String name, int age, String branch, double balance, Scanner sc) {
+
+        int id = idCounter++;
+        Account acc;
+
+        if (type == 1) {
+            acc = new SavingsAccount(id, name, age, branch, balance);
+        } else {
+            System.out.print("Enter overdraft limit: ");
+            double limit = sc.nextDouble();
+            acc = new CurrentAccount(id, name, age, branch, balance, limit);
+        }
+
         accounts.put(id, acc);
         totalAccounts++;
+
         System.out.println("Account created for " + name + " with ID: " + id);
-    }
-
-    void deposit(int id, double amount){
-        Account acc = findAccount(id);
-        if (acc != null) {
-            acc.deposit(amount);
-        } else {
-            System.out.println("Account not found!");
-        }
-    }
-
-    void withdraw(int id, double amount) {
-        Account acc = findAccount(id);
-        if (acc != null) {
-            acc.withdraw(amount);
-        } else {
-            System.out.println("Account not found!");
-        }
     }
 
     Account findAccount(int id) {
         return accounts.get(id);
     }
 
-    void transfer(int fromId, int toId, double amount){
+    void deposit(int id, double amount) {
+        Account acc = findAccount(id);
+        if (acc != null) acc.deposit(amount);
+        else System.out.println("Account not found!");
+    }
+
+    void withdraw(int id, double amount) {
+        Account acc = findAccount(id);
+        if (acc != null) acc.withdraw(amount);
+        else System.out.println("Account not found!");
+    }
+
+    void transfer(int fromId, int toId, double amount) {
         Account sender = findAccount(fromId);
-        Account reciever = findAccount(toId);
-        if(sender == null || reciever == null){
+        Account receiver = findAccount(toId);
+
+        if (sender == null || receiver == null) {
             System.out.println("Account not found");
             return;
         }
-        if(fromId == toId){
+
+        if (fromId == toId) {
             System.out.println("Cannot transfer to same account");
             return;
         }
-        if(amount <= 0){
-            System.out.println("Invalid Amount");
+
+        if (amount <= 0) {
+            System.out.println("Invalid amount");
             return;
         }
-        if(sender.getBalance() < amount){
-            System.out.println("Insufficient Balance");
+
+        if (sender.getBalance() < amount) {
+            System.out.println("Insufficient balance");
             return;
         }
+
         sender.withdraw(amount);
-        reciever.deposit(amount);
+        receiver.deposit(amount);
+
         System.out.println("Transfer successful");
+    }
+
+    void checkBalance(int id) {
+        Account acc = findAccount(id);
+        if (acc != null) {
+            System.out.println("Balance: " + acc.getBalance());
+        } else {
+            System.out.println("Account not found");
+        }
+    }
+
+    void showTransactions(int id) {
+        Account acc = findAccount(id);
+        if (acc != null) acc.printTransactions();
+        else System.out.println("Account not found");
+    }
+
+    void calculateInterest(int id) {
+        Account acc = findAccount(id);
+        if (acc != null) {
+            System.out.println("Interest: " + acc.calculateInterest());
+        } else {
+            System.out.println("Account not found");
+        }
     }
 }
 
+// MAIN CLASS
 public class Banking_System {
     public static void main(String[] args) {
+
         Scanner sc = new Scanner(System.in);
         Bank bank = new Bank();
 
@@ -174,95 +244,77 @@ public class Banking_System {
             System.out.println("4. Transfer");
             System.out.println("5. Check Balance");
             System.out.println("6. Show Transactions");
-            System.out.println("7. Exit");
-            System.out.print("Enter your choice: ");
+            System.out.println("7. Calculate Interest");
+            System.out.println("8. Exit");
 
             int choice = sc.nextInt();
 
             switch (choice) {
 
                 case 1:
+                    System.out.println("1. Savings Account");
+                    System.out.println("2. Current Account");
+                    int type = sc.nextInt();
+
+                    sc.nextLine();
                     System.out.print("Enter name: ");
-                    sc.nextLine(); // consume newline
                     String name = sc.nextLine();
 
                     System.out.print("Enter age: ");
                     int age = sc.nextInt();
 
-                    System.out.print("Enter branch: ");
                     sc.nextLine();
+                    System.out.print("Enter branch: ");
                     String branch = sc.nextLine();
 
-                    System.out.print("Enter initial balance: ");
+                    System.out.print("Enter balance: ");
                     double balance = sc.nextDouble();
 
-                    bank.createAccount(name, age, branch, balance);
+                    bank.createAccount(type, name, age, branch, balance, sc);
                     break;
 
                 case 2:
-                    System.out.print("Enter account ID: ");
-                    int idDeposit = sc.nextInt();
-
-                    System.out.print("Enter amount: ");
-                    double depAmount = sc.nextDouble();
-
-                    bank.deposit(idDeposit, depAmount);
+                    System.out.print("Enter ID: ");
+                    bank.deposit(sc.nextInt(), sc.nextDouble());
                     break;
 
                 case 3:
-                    System.out.print("Enter account ID: ");
-                    int idWithdraw = sc.nextInt();
-
-                    System.out.print("Enter amount: ");
-                    double withAmount = sc.nextDouble();
-
-                    bank.withdraw(idWithdraw, withAmount);
+                    System.out.print("Enter ID: ");
+                    bank.withdraw(sc.nextInt(), sc.nextDouble());
                     break;
 
                 case 4:
-                    System.out.print("Enter sender ID: ");
-                    int fromId = sc.nextInt();
-
-                    System.out.print("Enter receiver ID: ");
-                    int toId = sc.nextInt();
-
-                    System.out.print("Enter amount: ");
-                    double transAmount = sc.nextDouble();
-
-                    bank.transfer(fromId, toId, transAmount);
+                    System.out.print("From ID: ");
+                    int from = sc.nextInt();
+                    System.out.print("To ID: ");
+                    int to = sc.nextInt();
+                    System.out.print("Amount: ");
+                    double amt = sc.nextDouble();
+                    bank.transfer(from, to, amt);
                     break;
 
                 case 5:
-                    System.out.print("Enter account ID: ");
-                    int idBal = sc.nextInt();
-
-                    Account acc = bank.findAccount(idBal);
-                    if (acc != null) {
-                        System.out.println("Balance: " + acc.getBalance());
-                    } else {
-                        System.out.println("Account not found");
-                    }
+                    System.out.print("Enter ID: ");
+                    bank.checkBalance(sc.nextInt());
                     break;
 
                 case 6:
-                    System.out.print("Enter account ID: ");
-                    int idTrans = sc.nextInt();
-
-                    Account acc2 = bank.findAccount(idTrans);
-                    if (acc2 != null) {
-                        acc2.printTransactions();
-                    } else {
-                        System.out.println("Account not found");
-                    }
+                    System.out.print("Enter ID: ");
+                    bank.showTransactions(sc.nextInt());
                     break;
 
                 case 7:
-                    System.out.println("Exiting... Thank you!");
+                    System.out.print("Enter ID: ");
+                    bank.calculateInterest(sc.nextInt());
+                    break;
+
+                case 8:
+                    System.out.println("Thank you!");
                     sc.close();
                     return;
 
                 default:
-                    System.out.println("Invalid choice!");
+                    System.out.println("Invalid choice");
             }
         }
     }
